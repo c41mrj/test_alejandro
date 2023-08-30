@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Alejandro Martínez</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.3/xlsx.full.min.js"></script>
+
+     </head>
+    
+
+  <body class="bg-secondary-subtle">
+      <h1 class="text-center">Modulo de adminsitración</h1>
+      <p class="text-center">En este modulo se podrá realizar alta y modificación de clientes y productos. De igual forma, se podrá dar de alta Facturas y la genración de un reporte de todas las facturas generadas.</p>
+    <div class="container">
+      <div class="row">
+        <div class="col">
+          <div class="dropdown">
+            <button
+              class="btn btn-primary dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Clientes
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" data-bs-toggle="modal" data-bs-target="#Add">Agregar</a></li>
+              <li><a class="dropdown-item" id="modifyClient" onclick="modifyclient()" data-bs-toggle="modal" data-bs-target="#SetClient">Modificar</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="col">
+          <div class="dropdown">
+            <button
+              class="btn btn-info dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Productos
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#AddProducto">Agregar</a></li>
+              <li><a class="dropdown-item" onclick="getProducto()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#SetProduct">Modificar</a></li>
+
+            </ul>
+          </div>
+        </div>
+        <div class="col">
+          <div class="dropdown">
+            <button
+              class="btn btn-success dropdown-toggle"
+              type="button"
+              data-bs-toggle="dropdown"
+              aria-expanded="false"
+            >
+              Facturas
+            </button>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" onclick="setFacturas()" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#CreateFactura">Agregar</a></li>
+              <li><a class="dropdown-item" href="/download">Descargar</a></li>
+              <li><a class="dropdown-item" onclick="getFacturas()">Generar</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+      {{#if flag}}
+      <div class="toast fade show  align-items-center text-bg-success border-0 position-fixed bottom-0 end-0 p-3" id="myToast">
+        <div class="toast-body">
+            Inserción realizada con éxito. 
+            Espera unos momentos.
+        </div>
+    </div>
+    <script>
+        var toast = document.getElementById('myToast');
+        console.log(toast)
+      setTimeout(()=>
+      {
+        toast.style.visibility='hidden'
+        window.location.replace("/")
+      },3000)
+    </script>
+    {{/if}}
+    
+       <!---Tabla--->
+       <br>
+       <div class="container mt-4" style="visibility:hidden" id="facturas">
+        <h3>Reporte de Facturación de la Agencia: Cresta del Valle</h3>
+        <h6>Facturación Total: <span id="total"> $0.00</span> </h6>
+        <h6>Total de Productos Vendidos: <span id="total_productos"> $0.00</span> </h6>
+        <table class="table table-bordered">
+          <thead>
+            <tr>
+              <th scope="col">Factura</th>
+              <th scope="col">Fecha de Facturación</th>
+              <th scope="col">Cliente</th>
+              <th scope="col">Productos</th>
+              <th scope="col">Monto Total</th>
+            </tr>
+          </thead>
+          <tbody id="body" class="table-group-divider"></tbody>
+        </table>
+        <button type="button" class="btn btn-outline-success" onclick="download()">Descargar</button>
+       </div>
+      <!---Modal>
+      <-->
+    <div class="modal fade" id="Add" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Agregar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <form action="/addClient" method="post">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Nombre" name="nombre" placeholder="Nombre" required>
+            <label for="nombre">Nombre</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="direccion" name="Domicilio" placeholder="Dirección" required>
+            <label for="direccion">Dirección</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="email" placeholder="name@example.com" name="email" required>
+            <label for="email">Email address</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+      </form>
+      </div>
+      
+      </div>
+    </div>
+  </div>
+  <!---Modal Producto-->
+   <div class="modal fade" id="AddProducto" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Agregar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <form action="/addProduct" method="post">
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Nombre" name="nombre" placeholder="Nombre" required>
+            <label for="nombre">Nombre</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="marca" name="marca" placeholder="Marca" required>
+            <label for="marca">Marca</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="number" class="form-control" id="costo" placeholder="Costo" name="Costo" required>
+            <label for="costo">Costo</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="number" class="form-control" id="PrecioVenta" placeholder="Precio Venta" name="PrecioVenta" required>
+            <label for="PrecioVenta">Precio Venta</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+        
+      </form>
+      </div>
+      </div>
+    </div>
+  </div>
+  <!---FinModal Producto-->
+  <!---Modal Editar Cliente-->
+   <div class="modal fade" id="SetClient" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modificar Cliente</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <form action="/setClient" method="post">
+        <div class="form-floating mb-3">
+           <select class="form-select" aria-label="Selecciona cliente" id="select_client" name="IdCliente">
+              <option selected>Selecciona un cliente</option>
+            </select>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Nombre_C" name="nombre" placeholder="Nombre" required>
+            <label for="nombre">Nombre</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="direccion_C" name="Domicilio" placeholder="Dirección" required>
+           
+            <label for="direccion">Dirección </label>
+  
+        </div>
+        <div class="form-floating mb-3">
+            <input type="email" class="form-control" id="email_C" placeholder="name@example.com" name="email" required>
+            <label for="email">Email address</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+      </form>
+      </div>
+      </div>
+    </div>
+  </div>
+<!---Modal Editar Cliente-->
+<div class="modal fade" id="SetProduct" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modificar Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <form action="/setProducto" method="post">
+        <div class="form-floating mb-3">
+           <select class="form-select" aria-label="Selecciona producto" id="select_product" name="idProducto">
+              <option selected>Selecciona un producto</option>
+            </select>
+        </div>
+       <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Nombre_P" name="nombre" placeholder="Nombre" required>
+            <label for="nombre">Nombre</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="marca_P" name="marca" placeholder="Marca" required>
+            <label for="marca">Marca</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="costo_P" placeholder="Costo" name="Costo" required>
+            <label for="costo">Costo</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Precio_P" placeholder="Precio Venta" name="PrecioVenta" required>
+            <label for="PrecioVenta">Precio Venta</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+      </form>
+      </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+ 
+<!---Modal Crea Factura-->
+<div class="modal fade" id="CreateFactura" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLabel">Modificar Producto</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+       <form action="/createFactura" method="post">
+        
+       <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Factura" name="NumeroFactura" placeholder="Número de Factura" required>
+            <label for="nombre">Número de Factura</label>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="datetime-local" class="form-control" id="femision" name="FechaHora" placeholder="Fecha de emisión" required>
+            <label for="marca">Fecha emisión</label>
+        </div>
+        <div class="form-floating mb-3">
+            <select class="form-select" aria-label="Selecciona producto" id="select_clientes" name="IdClient">
+              <option selected>Selecciona un cliente</option>
+            </select>
+        </div>
+        <div class="form-floating mb-3">
+            <select class="form-select" aria-label="Selecciona producto" id="select_products" name="idProducto">
+              <option selected>Selecciona un producto</option>
+            </select>
+        </div>
+        <div class="form-floating mb-3">
+            <input type="text" class="form-control" id="Cantidad" name="Cantidad" placeholder="Cantidad" required>
+            <label for="marca">Cantidad</label>
+        </div>
+        <button type="submit" class="btn btn-primary">Guardar registro</button>
+      </form>
+      </div>
+      </div>
+    </div>
+  </div>
+   <p class="text-center">Realizado por Alejandro Martínez.</p>
+  </body>
+  
+
+
+
+<script>
+  
+  document.addEventListener('DOMContentLoaded',(e)=>
+  {
+    e.preventDefault()
+  })
+
+function setFacturas()
+  {
+
+  let factura = document.getElementById('Factura');
+  let fecha = document.getElementById('femision');
+  let clients = document.getElementById('select_clientes')
+  clients.innerHTML=''
+  let options_clients = document.querySelectorAll('#opciones_clients')
+  let products = document.getElementById('select_products')
+  products.innerHTML=''
+  let options_products=document.querySelectorAll('#opciones_products')
+  let cantidad = document.getElementById('Cantidad')
+
+  const xhr = new XMLHttpRequest()
+  let data_clients;
+  xhr.open("GET","/getClients")
+  xhr.send()
+  xhr.responseType='json'
+  xhr.onload=()=>
+  {
+     if(xhr.readyState==4 && xhr.status==200)
+      {
+         data_clients = xhr.response;
+       if(options_clients.length>0)
+    {
+      clients.removeChild(option_clients)
+    }
+        for (let x=0;x<data_clients.length;x++)
+        { 
+          option_clients = new Option(data_clients[x].Nombre,data_clients[x].IdClient)
+          option_clients.setAttribute('id','opciones_clientes')
+          clients.appendChild(option_clients)
+        }
+      }
+      else{
+        console.log(`Error: ${xhr.status}`)
+      }
+  }
+
+  const xhrP = new XMLHttpRequest()
+  let data_products;
+  xhrP.open("GET","/getProductos")
+  xhrP.send()
+  xhrP.responseType='json'
+  xhrP.onload=()=>
+  {
+     if(xhr.readyState==4 && xhr.status==200)
+      {
+         data_products = xhrP.response;
+       if(options_products.length>0)
+    {
+      products.removeChild(option_products)
+    }
+        for (let x=0;x<data_products.length;x++)
+        { 
+          option_products = new Option(data_products[x].Nombre,data_products[x].idProducts)
+          option_products.setAttribute('id','opciones_products')
+          products.appendChild(option_products)
+        }
+      }
+      else{
+        console.log(`Error: ${xhrP.status}`)
+      }
+  }
+
+
+  }
+
+
+function download()
+{
+  const xhr = new XMLHttpRequest() 
+ let data;
+ let tbody = document.getElementById('body')
+ tbody.innerHTML=''
+ window.location.href="/download"
+ 
+}
+
+function getFacturas()
+{
+let container = document.getElementById('facturas')
+container.style.visibility="visible"
+ const xhr = new XMLHttpRequest() 
+ let data;
+ let tbody = document.getElementById('body')
+ tbody.innerHTML=''
+ xhr.open('GET','/getFacturas')
+ xhr.send();
+ xhr.responseType="json"
+ xhr.onload=()=>
+ {
+  if(xhr.readyState==4 && xhr.status==200)
+  {
+    let total=0;
+    let tProductos=0;
+    data=xhr.response
+    data.forEach((element)=>{
+
+      total=total+parseFloat(element.Monto)
+      tProductos=tProductos+parseInt(element.Productos)
+    })
+
+    console.log(total)
+    data.forEach((element)=>
+    {
+      var row = document.createElement("tr")
+      var Factura = document.createElement("td")
+      Factura.textContent=element.Factura;
+      row.appendChild(Factura);
+
+      var Fecha = document.createElement("td")
+      Fecha.textContent=element.Fecha;
+      row.appendChild(Fecha);
+
+      var Cliente = document.createElement("td")
+      Cliente.textContent=element.Cliente;
+      row.appendChild(Cliente);
+
+      var Productos = document.createElement("td")
+      Productos.textContent=element.Productos;
+      row.appendChild(Productos);
+
+      var Monto = document.createElement("td")
+      Monto.textContent='$'+element.Monto;
+      row.appendChild(Monto);
+      
+      tbody.appendChild(row)
+
+    let t= new Intl.NumberFormat('es-MX').format(total)
+      var totalF = document.getElementById('total').textContent='$'+t
+      
+      var totalP =document.getElementById('total_productos').textContent=tProductos
+    })
+  }
+  else
+  {
+    console.log(`Error: ${xhr.status}`)
+  }
+ }
+}
+
+
+
+
+
+
+
+
+  function modifyclient()
+  {
+    let select = document.getElementById('select_client');
+    let option
+    let options = document.querySelectorAll('#opciones')
+    console.log(options.length)
+    let name = document.getElementById('Nombre_C')
+    let domicilio = document.getElementById('direccion_C')
+    let email = document.getElementById('email_C')
+    const xhr = new XMLHttpRequest();
+    let data;
+    xhr.open("GET","/getClients");
+    xhr.send();
+    xhr.responseType="json";
+    xhr.onload = () =>{
+      if(xhr.readyState==4 && xhr.status==200)
+      {
+         data = xhr.response;
+       if(options.length>0)
+    {
+      select.removeChild(option)
+    }
+        for (let x=0;x<data.length;x++)
+        { 
+          option = new Option(data[x].Nombre,data[x].IdClient)
+          option.setAttribute('id','opciones')
+          select.appendChild(option)
+        }
+      }
+      else{
+        console.log(`Error: ${xhr.status}`)
+      }
+    }
+    console.log(select)
+     select.addEventListener('change',()=>{
+      console.log(select.value)
+      var elementosFiltrado = data.filter((element)=>
+      {
+        if(element.IdClient==select.value)
+        {
+          name.value = element.Nombre
+          domicilio.value = element.Domicilio;
+          email.value = element.email,
+          select.value = parseInt(element.IdClient)
+        }
+      })
+     })
+  }
+  function getProducto()
+  {
+    let select_P = document.getElementById('select_product');
+    let option_P
+    let options_P = document.querySelectorAll('#opciones_product')
+
+    let name = document.getElementById('Nombre_P')
+    let marca = document.getElementById('marca_P')
+    let costo = document.getElementById('costo_P')
+    let Precio = document.getElementById('Precio_P')
+    
+    const xhr = new XMLHttpRequest();
+    let data;
+    xhr.open("GET","/getProductos");
+    xhr.send();
+    xhr.responseType="json";
+    xhr.onload = () =>{
+      if(xhr.readyState==4 && xhr.status==200)
+      {
+         data = xhr.response;
+       if(options_P.length>0)
+    {
+      select_P.removeChild(option_P)
+    }
+    console.log(data)
+        for (let x=0;x<data.length;x++)
+        { 
+          option_P = new Option(data[x].Nombre,data[x].idProducto)
+          option_P.setAttribute('id','opciones_product')
+          select_P.appendChild(option_P)
+        }
+      }
+      else{
+        console.log(`Error: ${xhr.status}`)
+      }
+    }
+    console.log(select_P)
+    select_P.addEventListener('change',()=>{
+      var elementosFiltrado = data.filter((element)=>
+      {
+        marca.value=500
+        console.log(parseInt(element.PrecioVenta))
+        if(element.idProducto==select_P.value)
+        {
+          console.log(element)
+          name.value = element.Nombre
+          marca.value = element.Marca;
+          costo.value = element.Costo
+          Precio.value = element.PrecioVenta;
+          select_P.value =parseInt(element.idProducto) 
+        }
+        else{
+          console.log("Not fOUND")
+        }
+      })
+     })
+
+  }
+
+
+</script>
+
+</html>

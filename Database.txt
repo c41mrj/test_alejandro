@@ -1,0 +1,26 @@
+create database examen_alejandro_martinez;
+create table t_clientes (IdClient int not null primary key auto_increment, Nombre varchar(50), Domicilio varchar(50),
+email varchar(50)); 
+
+create table t_facturas (IdFactura int not null primary key auto_increment,
+NumeroFactura varchar(10),FechaHora datetime, IdClient int, foreign key(IdClient) references t_clientes(IdClient));
+
+create table t_productos (idProducto int not null primary key auto_increment,Nombre varchar(50), Marca varchar(50),
+Costo numeric(5,2), PrecioVenta numeric(5,2));
+
+create table t_detalleFactura (idDetalle int not null primary key auto_increment, IdFactura int, idProducto int,
+Cantidad int, foreign key (IdFactura) references t_facturas(IdFactura),
+foreign key(idProducto) references t_productos(idProducto));
+
+/*Query para reporte*/
+SELECT 
+    t_facturas.idFactura as 'Factura',
+    t_facturas.FechaHora as 'Fecha de Facturación',
+    t_clientes.Nombre as 'Cliente',
+    t_detalleFactura.Cantidad as 'Productos',
+    CAST(SUM(t_productos.PrecioVenta * t_detalleFactura.Cantidad) AS DECIMAL(10, 2)) AS 'Monto Total'
+FROM t_facturas
+INNER JOIN t_clientes ON t_facturas.IdClient = t_clientes.IdClient
+INNER JOIN t_detalleFactura ON t_facturas.idFactura = t_detalleFactura.idFactura
+INNER JOIN t_productos ON t_detalleFactura.idProducto = t_productos.IdProducto
+GROUP BY t_facturas.idFactura, t_facturas.FechaHora, t_clientes.Nombre, t_detalleFactura.Cantidad;
